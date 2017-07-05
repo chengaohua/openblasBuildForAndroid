@@ -1,8 +1,9 @@
 #!/bin/bash
 echo "Build for Android"
-APP_ABI="android-9" 
+APP_ABI="android-9"
+
 OUTPUT_DIR=${PWD}
-NDK_ROOT=$(locate ndk-bundle | head -1)
+NDK_ROOT="/opt/android_ndk_r14/android-ndk-r14b"
 echo "NDK_ROOT=$NDK_ROOT"
 PATHI=$PATH 
 if [ ! -d "OpenBLAS" ]; then  
@@ -33,18 +34,18 @@ for architecture in ${architectureList[@]}; do
     echo ${architecture}
     case ${architecture} in
         "armeabi")
-            APP_ABI="android-9"
+            APP_ABI="android-19"
             target="ARMV5"
             arch="arch-arm"
             CCFolder="arm-linux-androideabi-4.9" 
             CC="arm-linux-androideabi-gcc"
             ;;
         "armv7a")
-            APP_ABI="android-9"
+            APP_ABI="android-19"
             target="ARMV7"
             arch="arch-arm"
             CCFolder="arm-linux-androideabi-4.9"  
-            CC="arm-linux-androideabi-gcc"
+            CC="arm-linux-androideabi-gcc ARM_SOFTFP_ABI=1 "
             ;;
         "arm64-v8a")
             APP_ABI="android-21"
@@ -54,7 +55,7 @@ for architecture in ${architectureList[@]}; do
             CC="aarch64-linux-android-gcc" 
             ;;
         "mips")
-           APP_ABI="android-9"
+           APP_ABI="android-19"
             target="P5600 AR=mipsel-linux-android-ar "
             arch="arch-mips"
             CCFolder="mipsel-linux-android-4.9"
@@ -66,7 +67,7 @@ for architecture in ${architectureList[@]}; do
             CCFolder="mips64el-linux-android-4.9"
             CC="mips64el-linux-android-gcc" ;;
         "x86")
-            APP_ABI="android-9"
+            APP_ABI="android-19"
             target="ATOM"
             arch="arch-x86"
             CCFolder="x86-4.9"
@@ -86,8 +87,13 @@ for architecture in ${architectureList[@]}; do
 
 echo ${NDK_ROOT}/toolchains/${CCFolder}/prebuilt/linux-x86_64/bin
 export PATH=${NDK_ROOT}/toolchains/${CCFolder}/prebuilt/linux-x86_64/bin:${PATHI}
-command="make TARGET=${target} HOSTCC=gcc CC=${CC} USE_THREAD=0 NOFORTRAN=1 CFLAGS=--sysroot=${NDK_ROOT}/platforms/${APP_ABI}/${arch}"
- 
+
+
+command="make TARGET=${target} HOSTCC=gcc CC=${CC}  USE_THREAD=0 NOFORTRAN=1 CFLAGS=--sysroot=${NDK_ROOT}/platforms/${APP_ABI}/${arch} "
+
+#ARM_SOFTFP_ABI=1 
+#TARGET_CFLAGS += -msoft-float -D_NDK_MATH_NO_SOFTFP=1
+#TARGET_LDFLAGS += -Wl,--no-warn-mismatch -lm_hard
 echo $command
 mkdir -p ../${architecture}
 make clean
